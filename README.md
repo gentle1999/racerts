@@ -29,6 +29,25 @@ It can also be accessed via a command line interface.
 $ racerts example.xyz --charge 0 --reacting_atoms 2 3 4
 ```
 
+# Cite this work
+If you use racerTS in one of your works, please make sure to cite it:
+
+```
+@misc{schmid_rapid_2025,
+	title = {Rapid generation of transition-state conformer ensembles via constrained distance geometry},
+	url = {https://chemrxiv.org/engage/chemrxiv/article-details/69173ebea10c9f5ca165ef65},
+	doi = {10.26434/chemrxiv-2025-d50pd},
+	language = {en},
+	publisher = {ChemRxiv},
+  month = nov,
+	author = {Schmid, Stefan P. and Seng, Henrik and Kläy, Thibault and Jorner, Kjell},
+	year = {2025},
+}
+```
+
+# Data availability
+
+All data to reproduce the study can be found on [Zenodo](https://doi.org/10.5281/zenodo.17610186).
 
 # License
 MIT License
