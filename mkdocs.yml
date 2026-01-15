@@ -1,5 +1,5 @@
 site_name: "racerTS documentation"
-site_description: Rapid and Accurate Conformer Ensembles with RDKit for Transition States
+site_description: Rapid Conformer Ensembles with RDKit for Transition States
 copyright: "Copyright © 2025 ETH Zürich"
 site_dir: site
 strict: false

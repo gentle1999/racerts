@@ -1,6 +1,6 @@
 <img src="https://raw.githubusercontent.com/digital-chemistry-laboratory/racerts/main/docs/img/logo.png" alt="Logo" width="1000">
 
-**R**apid and **A**ccurate **C**onformer **E**nsembles with **R**DKit for **T**ransition **S**tates
+**Ra**pid **C**onformer **E**nsembles with **R**DKit for **T**ransition **S**tates
 
 <img src="https://raw.githubusercontent.com/digital-chemistry-laboratory/racerts/main/docs/img/TOC.png" alt="TOC" width="400">
 
