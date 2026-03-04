@@ -1,14 +1,12 @@
-from abc import abstractmethod, ABC
-from typing import Optional, List
+from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor
+from typing import List, Optional
 
 from rdkit import Chem
-from rdkit.Chem.AllChem import (
-    AlignMol,  # type: ignore
-    UFFGetMoleculeForceField,  # type: ignore
-    MMFFGetMoleculeProperties,  # type: ignore
-    MMFFGetMoleculeForceField,  # type: ignore
-)
-from concurrent.futures import ThreadPoolExecutor
+from rdkit.Chem.AllChem import AlignMol  # type: ignore
+from rdkit.Chem.AllChem import MMFFGetMoleculeForceField  # type: ignore
+from rdkit.Chem.AllChem import MMFFGetMoleculeProperties  # type: ignore
+from rdkit.Chem.AllChem import UFFGetMoleculeForceField  # type: ignore
 
 
 class BaseOptimizer(ABC):
@@ -31,6 +29,40 @@ class BaseOptimizer(ABC):
         Embed a transition state
         """
 
+    def align_mols(
+        self,
+        mol: Chem.Mol,
+        reference: Chem.Mol,
+        align_indices: Optional[List[int]] = None,
+        conf_id: Optional[int] = None,
+    ) -> None:
+        align_indices = [] if align_indices is None else align_indices
+        if not align_indices:
+            return
+
+        if getattr(self, "conf_id_ref", -1) == -1:
+            self.conf_id_ref = reference.GetConformer().GetId()
+
+        atom_map = [(idx, idx) for idx in align_indices]
+        if conf_id is None:
+            for conformer in mol.GetConformers():
+                AlignMol(
+                    mol,
+                    reference,
+                    atomMap=atom_map,
+                    prbCid=conformer.GetId(),
+                    refCid=self.conf_id_ref,
+                )
+            return
+
+        AlignMol(
+            mol,
+            reference,
+            atomMap=atom_map,
+            prbCid=conf_id,
+            refCid=self.conf_id_ref,
+        )
+
 
 class UFFOptimizer(BaseOptimizer):
     def __init__(
@@ -48,8 +80,6 @@ class UFFOptimizer(BaseOptimizer):
         reference: Chem.Mol,
         align_indices: List[int],
     ):
-        atom_map = [(i, i) for i in align_indices]
-
         if self.conf_id_ref == -1:
             self.conf_id_ref = reference.GetConformer().GetId()
 
@@ -59,12 +89,11 @@ class UFFOptimizer(BaseOptimizer):
             """
             Returns the number of failed minimisation attempts for this conformer.
             """
-            AlignMol(
-                mol,
-                reference,
-                atomMap=atom_map,
-                prbCid=conf_id,
-                refCid=self.conf_id_ref,
+            self.align_mols(
+                mol=mol,
+                reference=reference,
+                align_indices=align_indices,
+                conf_id=conf_id,
             )
 
             ff = UFFGetMoleculeForceField(
@@ -86,12 +115,11 @@ class UFFOptimizer(BaseOptimizer):
 
             mol.GetConformer(conf_id).SetDoubleProp("energy", ff.CalcEnergy())
 
-            AlignMol(
-                mol,
-                reference,
-                atomMap=atom_map,
-                prbCid=conf_id,
-                refCid=self.conf_id_ref,
+            self.align_mols(
+                mol=mol,
+                reference=reference,
+                align_indices=align_indices,
+                conf_id=conf_id,
             )
 
             return local_fail
@@ -126,11 +154,7 @@ class MMFFOptimizer(BaseOptimizer):
         mol: Chem.Mol,
         reference: Chem.Mol,
         align_indices,
-        num_threads: int = 1,
     ):
-
-        atom_map = [(i, i) for i in align_indices]
-
         if self.conf_id_ref == -1:
             self.conf_id_ref = reference.GetConformer().GetId()
 
@@ -143,12 +167,11 @@ class MMFFOptimizer(BaseOptimizer):
             """
             Returns the number of failed minimisation attempts for this conformer.
             """
-            AlignMol(
-                mol,
-                reference,
-                atomMap=atom_map,
-                prbCid=conf_id,
-                refCid=self.conf_id_ref,
+            self.align_mols(
+                mol=mol,
+                reference=reference,
+                align_indices=align_indices,
+                conf_id=conf_id,
             )
             ff = MMFFGetMoleculeForceField(
                 mol,
@@ -172,12 +195,11 @@ class MMFFOptimizer(BaseOptimizer):
 
             mol.GetConformer(conf_id).SetDoubleProp("energy", ff.CalcEnergy())
 
-            AlignMol(
-                mol,
-                reference,
-                atomMap=atom_map,
-                prbCid=conf_id,
-                refCid=self.conf_id_ref,
+            self.align_mols(
+                mol=mol,
+                reference=reference,
+                align_indices=align_indices,
+                conf_id=conf_id,
             )
 
             return local_fail
